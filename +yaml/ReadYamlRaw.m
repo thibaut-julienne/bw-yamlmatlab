@@ -41,7 +41,7 @@ persistent nsfe;
     end;
     yaml = org.yaml.snakeyaml.Yaml(); % It appears that Java objects cannot be persistent!?
     if ~tadf
-        [filepath, filename, fileext] = fileparts(inputfilename);
+        [filepath, filename, fileext] = fileparts(char(inputfilename));
         if isempty(filepath)
             pathstore = cd();
         else

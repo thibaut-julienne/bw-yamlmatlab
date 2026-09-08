@@ -3,8 +3,8 @@ import yaml.*;
 if ~exist('flowstyle','var')
         flowstyle = 0;
     end;
-    if ~ismember(flowstyle, [0,1])
-        error('Flowstyle must be 0,1 or empty.');
+    if ~ismember(flowstyle, [0,1,2])
+        error('Flowstyle must be 0 (auto), 1 (flow), 2 (block) or empty.');
     end;
     result = [];
     [pth,~,~] = fileparts(mfilename('fullpath'));
@@ -21,7 +21,7 @@ if ~exist('flowstyle','var')
     javastruct = scan(data);
     dumperopts = DumperOptions();
     dumperopts.setLineBreak(        javaMethod('getPlatformLineBreak',        'org.yaml.snakeyaml.DumperOptions$LineBreak'));
-    if flowstyle
+    if flowstyle == 1
         classes = dumperopts.getClass.getClasses;
         flds = classes(3).getDeclaredFields();
         fsfld = flds(1);
@@ -29,6 +29,8 @@ if ~exist('flowstyle','var')
             error(['Accessed another field instead of FLOW. Please correct',            'class/field indices (this error maybe caused by new snakeyaml version).']);
         end;
         dumperopts.setDefaultFlowStyle(fsfld.get([]));
+    elseif flowstyle == 2
+        dumperopts.setDefaultFlowStyle(javaMethod('valueOf',            'org.yaml.snakeyaml.DumperOptions$FlowStyle', 'BLOCK'));
     end;
     yaml = Yaml(dumperopts);
     output = yaml.dump(javastruct);
@@ -44,6 +46,8 @@ function result = scan(r)
 import yaml.*;
 if ischar(r)
         result = scan_char(r);
+    elseif isstring(r)
+        result = scan_string(r);
     elseif iscell(r)
         result = scan_cell(r);
     elseif isord(r)
@@ -84,6 +88,20 @@ if isempty(r)
         result = java.util.ArrayList();
     else
         result = java.lang.String(r);
+    end
+end
+function result = scan_string(r)
+import yaml.*;
+if isempty(r)
+        result = java.util.ArrayList();
+    elseif isscalar(r)
+        if ismissing(r)
+            result = java.util.ArrayList();
+        else
+            result = java.lang.String(char(r));
+        end
+    else
+        result = scan_cell(cellstr(r));
     end
 end
 function result = scan_datetime(r)
