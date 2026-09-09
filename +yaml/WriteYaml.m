@@ -1,7 +1,7 @@
 function result = WriteYaml(filename, data, flowstyle)
 import yaml.*;
 if ~exist('flowstyle','var')
-        flowstyle = 0;
+    flowstyle = 2;
     end;
     if ~ismember(flowstyle, [0,1,2])
         error('Flowstyle must be 0 (auto), 1 (flow), 2 (block) or empty.');
